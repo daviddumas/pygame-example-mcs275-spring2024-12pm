@@ -10,3 +10,7 @@ python3 main.py
 ```
 
 Use arrow keys to move the robot.  Close the window to exit.
+
+## Contributors
+
+* David Dumas <ddumas@uic.edu>
