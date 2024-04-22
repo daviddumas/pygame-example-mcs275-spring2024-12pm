@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, QUIT
+import random
 
 pygame.init()
 
@@ -9,6 +10,8 @@ GameClock = pygame.time.Clock()  # manages time in the game
 
 # Color constants
 WHITE = (255, 255, 255)
+GRAY = (180,180,180)
+GAME_BG = GRAY
 
 # Display area size (will be window size if windowed)
 DISP_WIDTH = 800
@@ -16,7 +19,7 @@ DISP_HEIGHT = 600
 
 # Make a "display surface" to draw the game on
 DISPLAYSURF = pygame.display.set_mode((DISP_WIDTH, DISP_HEIGHT))
-DISPLAYSURF.fill(WHITE)
+DISPLAYSURF.fill(GAME_BG)
 pygame.display.set_caption("PyGame Example")  # window title / taskbar string
 
 
@@ -28,6 +31,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load("Player.png")
+        self.image.set_colorkey(WHITE)
         self.rect = (
             self.image.get_rect()
         )  # rectangular region representing image dimensions
@@ -56,8 +60,35 @@ class Player(pygame.sprite.Sprite):
     def draw(self, surface):
         surface.blit(self.image, self.rect)
 
+class Robot(pygame.sprite.Sprite):
+    "Sprite representing a NPC robot"
+    SPEED = 250  # in pixels/second
 
-p = Player()
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load("Player.png")
+        self.image.set_colorkey(WHITE)
+        self.rect = (
+            self.image.get_rect()
+        )  # rectangular region representing image dimensions
+        self.rect.center = (
+            random.randrange(DISP_WIDTH),
+            random.randrange(DISP_HEIGHT)
+        )
+
+    def update(self):
+        pass
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+
+
+
+sprites = []
+
+sprites.append(Player())
+for _ in range(5):
+    sprites.append(Robot())
 
 # MAIN LOOP
 while True:
@@ -67,12 +98,15 @@ while True:
             exit()
 
     # Have each sprite update its internal state
-    p.update()
+    for s in sprites:
+        s.update()
 
     # Clear the display
-    DISPLAYSURF.fill(WHITE)
+    DISPLAYSURF.fill(GAME_BG)
+
     # Draw the sprites
-    p.draw(DISPLAYSURF)
+    for s in sprites:
+        s.draw(DISPLAYSURF)
 
     # Put the new content on the screen
     pygame.display.update()
