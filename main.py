@@ -66,7 +66,7 @@ class Robot(pygame.sprite.Sprite):
 
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("Player.png")
+        self.image = pygame.image.load("RobotNPC.png")
         self.image.set_colorkey(WHITE)
         self.rect = (
             self.image.get_rect()
