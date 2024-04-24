@@ -151,13 +151,20 @@ class PatrolRobot(Robot):
 
 sprites = []
 
+# Add the player
 sprites.append(Player())
+
+# Make a group of robots
+robots = pygame.sprite.Group()
 for _ in range(5):
-    sprites.append(Robot())
+    robots.add(Robot())
 for _ in range(5):
-    sprites.append(WanderRobot())
+    robots.add(WanderRobot())
 for _ in range(5):
-    sprites.append(PatrolRobot())
+    robots.add(PatrolRobot())
+
+# add the group of robots
+sprites.append(robots)
 
 # MAIN LOOP
 while True:
