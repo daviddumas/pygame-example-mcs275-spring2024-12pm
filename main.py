@@ -63,10 +63,11 @@ class Player(pygame.sprite.Sprite):
 class Robot(pygame.sprite.Sprite):
     "Sprite representing a NPC robot"
     SPEED = 250  # in pixels/second
+    SPRITE_FN = "RobotNPC_red.png"
 
     def __init__(self,position=None):
         super().__init__()
-        self.image = pygame.image.load("assets/RobotNPC.png")
+        self.image = pygame.image.load("assets/"+self.SPRITE_FN)
         self.image.set_colorkey(WHITE)
         self.rect = (
             self.image.get_rect()
@@ -87,7 +88,7 @@ class Robot(pygame.sprite.Sprite):
 
 class WanderRobot(Robot):
     """Robot that moves randomly (up,down,left,right)"""
-
+    SPRITE_FN = "RobotNPC_purple.png"
     possible_steps = [  # class attribute
         (1, 0),
         (-1, 0),
@@ -102,8 +103,8 @@ class WanderRobot(Robot):
 
 class PatrolRobot(Robot):
     """Robot walks back and forth along a straight line segment"""
+    SPRITE_FN = "RobotNPC_green.png"
 
-    symbol = "P"
     state_transitions = {
         "out": "back",
         "back": "out",
