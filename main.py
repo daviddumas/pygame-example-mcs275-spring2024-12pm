@@ -64,23 +64,88 @@ class Robot(pygame.sprite.Sprite):
     "Sprite representing a NPC robot"
     SPEED = 250  # in pixels/second
 
-    def __init__(self):
+    def __init__(self,position=None):
         super().__init__()
         self.image = pygame.image.load("assets/RobotNPC.png")
         self.image.set_colorkey(WHITE)
         self.rect = (
             self.image.get_rect()
         )  # rectangular region representing image dimensions
-        self.rect.center = (
-            random.randrange(DISP_WIDTH),
-            random.randrange(DISP_HEIGHT)
-        )
+        if position is not None:
+            self.rect.center = position
+        else:
+            self.rect.center = (
+                random.randrange(DISP_WIDTH),
+                random.randrange(DISP_HEIGHT)
+            )
 
     def update(self):
         pass
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
+
+class WanderRobot(Robot):
+    """Robot that moves randomly (up,down,left,right)"""
+
+    possible_steps = [  # class attribute
+        (1, 0),
+        (-1, 0),
+        (0, 1),
+        (0, -1),
+    ]
+
+    def update(self):
+        "Take one step, randomly"
+        step = random.choice(self.possible_steps)  # e.g. (1,0)
+        self.rect.move_ip(*step)                   # e.g. move_ip(1,0)
+
+class PatrolRobot(Robot):
+    """Robot walks back and forth along a straight line segment"""
+
+    symbol = "P"
+    state_transitions = {
+        "out": "back",
+        "back": "out",
+    }
+
+    def __init__(self, position=None, direction=None, steps=50):
+        """
+        Initialize a robot at `position` that takes `steps`
+        steps in `direction` then turns around, repeats.
+        """
+        # Call Bot constructor
+        super().__init__(position)
+        if direction is None:
+            direction = random.choice( [
+                (1,0),
+                (0,1),
+                (-1,0),
+                (0,-1),
+                (1,1),
+                (1,-1),
+                (-1,1),
+                (-1,-1)
+                ])
+        # Do Patrol-specific initialization
+        self.vectors = {
+            "out": direction,
+            "back": (-direction[0],-direction[1]),
+        }
+        self.steps = steps  # constant
+        self.state = "out"  # either "out" or "back"
+        self.n = 0  # number of steps so far in the current state
+
+    def update(self):
+        "Take a step and turn around if appropriate"
+        # Take a step
+        self.rect.move_ip(*self.vectors[self.state])
+        self.n += 1
+        # Is it time to turn around?
+        if self.n == self.steps:
+            # indeed, turn around
+            self.n = 0
+            self.state = self.state_transitions[self.state]
 
 
 
@@ -89,6 +154,10 @@ sprites = []
 sprites.append(Player())
 for _ in range(5):
     sprites.append(Robot())
+for _ in range(5):
+    sprites.append(WanderRobot())
+for _ in range(5):
+    sprites.append(PatrolRobot())
 
 # MAIN LOOP
 while True:
