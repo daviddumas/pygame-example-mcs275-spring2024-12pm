@@ -1,5 +1,5 @@
 import pygame
-from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, QUIT
+from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN, K_SPACE, KEYDOWN, QUIT
 import random
 
 pygame.init()
@@ -67,9 +67,11 @@ class Player(pygame.sprite.Sprite):
     "Sprite representing the player"
     SPEED = 250  # in pixels/second
 
-    def __init__(self, group=None):
+    def __init__(self, chargeables, group=None):
         super().__init__([group] if group is not None else [])
         self.image = asset("Player")
+        self.chargeables = chargeables # sprite group
+        self.give_charge_on_update = False
         self.image.set_colorkey(WHITE)
         self.rect = (
             self.image.get_rect()
@@ -79,6 +81,9 @@ class Player(pygame.sprite.Sprite):
             DISP_HEIGHT // 2,
         )  # move the center to display center
         self.chargebar = ChargeBar(parent=self, group=group)
+
+    def give_charge(self):
+        self.give_charge_on_update = True
 
     def update(self):
         pressed_keys = pygame.key.get_pressed()
@@ -96,6 +101,15 @@ class Player(pygame.sprite.Sprite):
             if pressed_keys[K_DOWN]:
                 self.rect.move_ip(0, self.SPEED * SPF)
         self.chargebar.update()
+
+        if self.give_charge_on_update:
+            self.give_charge_on_update = False
+            # donate some charge to any robot we're standing on
+            r = pygame.sprite.spritecollideany(self, self.chargeables)
+            if r is not None:
+                # There is a robot to give charge to.
+                self.chargebar.subtract_charge(10)
+                r.chargebar.add_charge(10)
 
     # draw should accept a surface and put this sprite onto it
     def draw(self, surface):
@@ -237,20 +251,26 @@ class PatrolRobot(Robot):
 sprites = []
 
 robots = pygame.sprite.Group()  # behaves like a sprite, but is many
+chargeables = pygame.sprite.Group()
 
 # create the robots
 for _ in range(5):
-    Robot(group=robots)
+    r = Robot(group=robots)
+    chargeables.add(r)
 for _ in range(5):
-    WanderRobot(group=robots)
+    r = WanderRobot(group=robots)
+    chargeables.add(r)
 for _ in range(5):
-    PatrolRobot(group=robots)
+    r = PatrolRobot(group=robots)
+    chargeables.add(r)
+r = None
 
 # Add the group of all robots
 sprites.append(robots)
 
 # Add the player
-sprites.append(Player())
+player = Player(chargeables)
+sprites.append(player)
 
 
 # MAIN LOOP
@@ -259,6 +279,8 @@ while True:
         if event.type == QUIT:
             pygame.quit()  # Shut down pygame/window/etc
             exit()
+        elif event.type == KEYDOWN and event.key == K_SPACE:
+            player.give_charge()
 
     # Have each sprite update its internal state
     for s in sprites:
